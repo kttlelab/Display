@@ -28,7 +28,7 @@ const App = () => {
   setInterval(() => setTime(moment().format("HH:mm:ss")), 1000);
   const [vehicles, setVehicles] = useState([]);
   const fetchVehicles = async () => {
-    const data = await Firebase.getCollection("vehicles", { value: "downtown" });
+    const data = await Firebase.getCollection("vehicles", { value: "" });
     const enhanced = data.map((d) => ({
       ...d,
       estimation: distanceToBusTime(
@@ -38,6 +38,16 @@ const App = () => {
     setVehicles(enhanced);
   };
   useEffect(fetchVehicles, []);
+
+  const fetchWeather = async () => {
+    try {
+      const {} = await fetch(
+        "https://api.openweathermap.org/data/2.5/onecall?lat=-2.0163553&lon=30.0025569&appid=cc29622412e809ae00999fc0c7cb326f&units=metric&exclude=minutely,hourly,daily"
+      ).the;
+    } catch (error) {}
+  };
+
+  useEffect(() => {});
   const half = vehicles.length / 2;
 
   return (
@@ -55,7 +65,7 @@ const App = () => {
       >
         <h1>ARRIVALS</h1>
         <div className="flex horizontal">
-          <img src={logo} alt="logo" />
+          <img className="icon" src={logo} alt="logo" />
           <h1>28&deg;C</h1>
         </div>
         <h1 style={{ color: "red" }}>{time}</h1>
