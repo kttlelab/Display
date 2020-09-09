@@ -1,5 +1,4 @@
-import firebase from "firebase";
-import "firebase/firestore";
+import { apps, firestore, initializeApp } from "firebase";
 
 const config = {
   apiKey: "AIzaSyDDDlQuhV1umenGHFK34ZoG4Ob7s3c3oW0",
@@ -15,55 +14,34 @@ const config = {
 class FirebaseService {
   constructor() {
     this.initializeApp();
-    this.database = firebase.firestore();
+    this.database = firestore();
   }
 
   initializeApp() {
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(config);
-      }
-    } catch (e) {
-      console.log(e);
-    }
+    if (!apps.length) initializeApp(config);
   }
 
   async getDocument(collection, document) {
-      let snapshot;
+    let snapshot;
     try {
       snapshot = await this.database.collection(collection).doc(document).get();
-
-      if (snapshot.exists) {
-        return Promise.resolve(snapshot.data());
-      }
-
+      if (snapshot.exists) return Promise.resolve(snapshot.data());
       return Promise.resolve(null);
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
-  async getCollection(collection, { field, sign, value } = {}, page = 1000) {
-    let snapshot;
+  async getCollection(collection, { value = "" } = {}) {
     try {
-      if (field && sign && value) {
-        snapshot = await this.database
-          .collection(collection)
-          .where(field, sign, value)
-          .limit(page)
-          .get();
-      } else {
-        snapshot = await this.database.collection(collection).limit(page).get();
-      }
-
+      const snapshot = await this.database.collection(collection).get();
       const result = [];
       snapshot.forEach((doc) => {
         result.push({ ...doc.data(), key: doc.id });
       });
-
-      return result;
+      return result.filter((r) => r.route && r.route.includes(value));
     } catch (e) {
-      return Promise.reject(e);
+      return e;
     }
   }
 }
